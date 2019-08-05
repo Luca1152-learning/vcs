@@ -1,7 +1,9 @@
 package ro.luca1152.vcs.utils.ui
 
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.utils.Align
 import com.kotcrab.vis.ui.widget.*
 import ktx.inject.Context
 import ro.luca1152.vcs.objects.Repository
@@ -93,5 +95,27 @@ class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
         setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+    }
+}
+
+class StageButton(context: Context, file: FileHandle, isStaged: Boolean) : VisTextButton(file.name()) {
+    // Injected objects
+    private val mainScreen: MainScreen = context.inject()
+
+    init {
+        label.setAlignment(Align.left)
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                if (tapCount == 2) {
+                    when (isStaged) {
+                        true -> mainScreen.repository.unstageFile(file)
+                        false -> mainScreen.repository.stageFile(file)
+                    }
+                    mainScreen.shouldUpdateUnstagedChanges = true
+                    mainScreen.shouldUpdateStagedChanges = true
+                }
+            }
+        })
     }
 }

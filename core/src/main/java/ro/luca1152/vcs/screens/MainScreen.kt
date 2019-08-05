@@ -15,6 +15,7 @@ import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.NewRepositoryWindow
 import ro.luca1152.vcs.utils.ui.OpenRepositoryWindow
+import ro.luca1152.vcs.utils.ui.StageButton
 
 class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
@@ -72,17 +73,69 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(actionsMenuBar.table)
     }
 
-    private val unstagedChangesWindow = VisWindow("Unstaged Changes").apply {
-        val scrollPane = ScrollPane(VisTable(), skin, "list").apply {
+    var shouldUpdateUnstagedChanges = false
+    private val unstagedChangesWindow = object : VisWindow("Unstaged Changes") {
+        private val entriesTable = VisTable()
+
+        val scrollPane = VisScrollPane(entriesTable).apply {
             setFlickScroll(false)
             fadeScrollBars = false
         }
+
+        init {
+            add(scrollPane).grow().top()
+        }
+
+        override fun act(delta: Float) {
+            super.act(delta)
+            if (shouldUpdateUnstagedChanges) {
+                shouldUpdateUnstagedChanges = false
+                updateEntries()
+            }
+        }
+
+        fun updateEntries() {
+            entriesTable.run {
+                setFillParent(true)
+                clearChildren()
+                top()
+                repository.unstagedFiles.forEach {
+                    add(StageButton(context, it, false)).growX().left().row()
+                }
+            }
+        }
     }
 
-    private val stagedChangesWindow = VisWindow("Staged Changes").apply {
-        val scrollPane = ScrollPane(VisTable(), skin, "list").apply {
+    var shouldUpdateStagedChanges = false
+    private val stagedChangesWindow = object : VisWindow("Staged Changes") {
+        private val entriesTable = VisTable()
+
+        val scrollPane = ScrollPane(entriesTable, skin, "list").apply {
             setFlickScroll(false)
             fadeScrollBars = false
+        }
+
+        init {
+            add(scrollPane).grow().top()
+        }
+
+        override fun act(delta: Float) {
+            super.act(delta)
+            if (shouldUpdateStagedChanges) {
+                shouldUpdateStagedChanges = false
+                updateEntries()
+            }
+        }
+
+        fun updateEntries() {
+            entriesTable.run {
+                setFillParent(true)
+                clearChildren()
+                top()
+                repository.stagedFiles.forEach {
+                    add(StageButton(context, it, true)).growX().left().row()
+                }
+            }
         }
     }
 
