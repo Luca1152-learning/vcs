@@ -53,9 +53,9 @@ class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
     init {
         add(repositoryNameTable).padBottom(10f).row()
         add(buttonsTable).expand().right()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -104,9 +104,9 @@ class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
     init {
         add(repositoryNameTable).padBottom(10f).row()
         add(buttonsTable).expand().right()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -151,9 +151,9 @@ class SuccessfulCommitWindow(context: Context) : VisWindow("") {
     init {
         add(repositoryNameLabel).padBottom(10f).row()
         add(closeButton).expand()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -174,9 +174,9 @@ class NothingToCommitWindow(context: Context) : VisWindow("") {
     init {
         add(repositoryNameLabel).padBottom(10f).expand().row()
         add(closeButton).expand()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -197,9 +197,9 @@ class NoCommitMessageWindow(context: Context) : VisWindow("") {
     init {
         add(repositoryNameLabel).padBottom(10f).expand().row()
         add(closeButton).expand()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 100f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -272,9 +272,9 @@ class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWi
         name = "RevertWindow"
         add(scrollPane).grow().row()
         add(closeButton).expandY()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 270f
         height = 160f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -311,9 +311,9 @@ class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScr
     init {
         add(repositoryNameLabel).padBottom(10f).expand().row()
         add(buttonsTable).expand().right()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 130f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
@@ -342,7 +342,7 @@ class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
                 super.clicked(event, x, y)
                 val newBranchName = branchNameField.text
                 config.run {
-                    var previousHead = getLatestCommitForCurrentBranch()
+                    val previousHead = getLatestCommitForCurrentBranch()
                     branches.add(newBranchName)
                     currentBranch = newBranchName
                     latestCommit[newBranchName] = ""
@@ -360,9 +360,97 @@ class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
     init {
         add(branchNameTable).padBottom(10f).row()
         add(buttonsTable).expand().right()
-        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
         height = 90f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
     }
 }
 
+class CheckoutWindow(context: Context, private val mainScreen: MainScreen) : VisWindow("Checkout branch...") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+    private val uiStage: UIStage = context.inject()
+    private val config: Config = context.inject()
+
+    private val branchesTable = VisTable().apply {
+        config.branches.forEach {
+            val button = VisTextButton(it).apply {
+                addListener(object : ClickListener() {
+                    override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                        super.clicked(event, x, y)
+                        uiStage.addActor(CheckoutConfirmationWindow(context, it, mainScreen))
+                    }
+                })
+            }
+            add(button).growX().padBottom(5f).row()
+        }
+    }
+
+    private val scrollPane = VisScrollPane(branchesTable).apply {
+        setFlickScroll(false)
+        fadeScrollBars = false
+        setScrollingDisabled(true, false)
+    }
+
+    private val closeButton = VisTextButton("Close").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@CheckoutWindow.remove()
+            }
+        })
+    }
+
+    init {
+        name = "CheckoutWindow"
+        add(scrollPane).grow().row()
+        add(closeButton).expandY()
+        width = 270f
+        height = 160f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
+    }
+}
+
+class CheckoutConfirmationWindow(context: Context, branch: String, mainScreen: MainScreen) : VisWindow("") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+    private val uiStage: UIStage = context.inject()
+    private val config: Config = context.inject()
+
+    private val repositoryNameLabel = VisLabel("Are you sure you want to\ncheckout to $branch?")
+    private val revertButton = VisTextButton("Checkout").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@CheckoutConfirmationWindow.remove()
+                uiStage.root.findActor<CheckoutWindow>("CheckoutWindow")?.remove()
+                mainScreen.repository.run {
+                    config.currentBranch = branch
+                    val commit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
+                    mainScreen.shouldResetCodeDiffText = true
+                    revertToCommit(commit!!)
+                }
+            }
+        })
+    }
+    private val closeButton = VisTextButton("Close").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@CheckoutConfirmationWindow.remove()
+            }
+        })
+    }
+    private val buttonsTable = VisTable().apply {
+        add(revertButton).padRight(10f)
+        add(closeButton)
+    }
+
+    init {
+        add(repositoryNameLabel).padBottom(10f).expand().row()
+        add(buttonsTable).expand().right()
+        width = 210f
+        height = 130f
+        setPosition(uiViewport.worldWidth / 2f - width / 2f, uiViewport.worldHeight / 2f - height / 2f)
+    }
+}

@@ -55,6 +55,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
             }))
             addItem(MenuItem("Checkout...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    uiStage.addActor(CheckoutWindow(context, this@MainScreen))
                 }
             }))
         })
@@ -157,6 +158,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(stagedChangesWindow).width(172f).height(225f)
     }
     private val codeDiffLabel = Label("a", skin, "default")
+    var shouldResetCodeDiffText = false
     private val codeDiffWindow = object : VisWindow("Code Difference") {
         init {
             this.titleTable.add(VisLabel("abc"))
@@ -176,7 +178,8 @@ class MainScreen(context: Context) : ScreenAdapter() {
                 }
             }
 
-            if (selectedFile == null || !::repository.isInitialized) {
+            if (selectedFile == null || !::repository.isInitialized || shouldResetCodeDiffText) {
+                shouldResetCodeDiffText = false
                 codeDiffLabel.setText("")
             } else {
                 codeDiffLabel.setText("")
