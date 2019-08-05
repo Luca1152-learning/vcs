@@ -12,6 +12,7 @@ import com.kotcrab.vis.ui.widget.*
 import ktx.app.clearScreen
 import ktx.inject.Context
 import ro.luca1152.vcs.utils.UIStage
+import ro.luca1152.vcs.utils.ui.NewRepositoryWindow
 
 class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
@@ -25,6 +26,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
         addMenu(Menu("Repository").apply {
             addItem(MenuItem("New...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    uiStage.addActor(NewRepositoryWindow(context))
                 }
             }))
             addItem(MenuItem("Open...", object : ChangeListener() {
