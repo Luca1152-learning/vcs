@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.kotcrab.vis.ui.VisUI
 import ktx.inject.Context
 import ro.luca1152.vcs.screens.LoadingScreen
 import ro.luca1152.vcs.utils.UICamera
@@ -14,6 +15,7 @@ class MyVcs : Game() {
     private val context = Context()
 
     override fun create() {
+        VisUI.load()
         initializeDependencyInjection()
         setScreen(context.inject<LoadingScreen>())
     }
