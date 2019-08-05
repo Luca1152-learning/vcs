@@ -4,11 +4,14 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.kotcrab.vis.ui.widget.*
 import ktx.inject.Context
+import ro.luca1152.vcs.objects.Repository
+import ro.luca1152.vcs.screens.MainScreen
 import ro.luca1152.vcs.utils.UIViewport
 
 class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
+    private val mainScreen: MainScreen = context.inject()
 
     private val repositoryNameLabel = VisLabel("Name:")
     private val repositoryNameField = VisTextField()
@@ -28,6 +31,9 @@ class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 super.clicked(event, x, y)
+                mainScreen.repository = Repository(repositoryNameField.text).apply {
+                    initialize()
+                }
                 this@NewRepositoryWindow.remove()
             }
         })

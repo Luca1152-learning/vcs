@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.kotcrab.vis.ui.widget.*
 import ktx.app.clearScreen
 import ktx.inject.Context
+import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.NewRepositoryWindow
 
@@ -22,6 +23,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     // Colors
     private val bgColor = skin.getColor("t-medium-dark")
 
+    // UI
     private val repositoryMenuBar = MenuBar().apply {
         addMenu(Menu("Repository").apply {
             addItem(MenuItem("New...", object : ChangeListener() {
@@ -101,6 +103,9 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(leftColumn).expand().left().top()
         add(rightColum).expand().right().top()
     }
+
+    // VCS
+    lateinit var repository: Repository
 
     init {
         uiStage.addActor(rootTable)
