@@ -119,3 +119,52 @@ class StageButton(context: Context, file: FileHandle, isStaged: Boolean) : VisTe
         })
     }
 }
+
+class SuccesfulCommitWindow(context: Context) : VisWindow("") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+    private val mainScreen: MainScreen = context.inject()
+
+    private val repositoryNameLabel = VisLabel("Succesful commit!")
+    private val closeButton = VisTextButton("Close").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@SuccesfulCommitWindow.remove()
+            }
+        })
+    }
+    private val buttonsTable = VisTable().apply {
+    }
+
+    init {
+        add(repositoryNameLabel).padBottom(10f).row()
+        add(closeButton).expand()
+        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
+        width = 210f
+        height = 90f
+    }
+}
+
+class NothingToCommitWindow(context: Context) : VisWindow("") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+
+    private val repositoryNameLabel = VisLabel("Nothing to commit...")
+    private val closeButton = VisTextButton("Close").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@NothingToCommitWindow.remove()
+            }
+        })
+    }
+
+    init {
+        add(repositoryNameLabel).padBottom(10f).expand().row()
+        add(closeButton).expand()
+        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
+        width = 210f
+        height = 90f
+    }
+}
