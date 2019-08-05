@@ -220,7 +220,7 @@ class CommitButton(mainScreen: MainScreen) : VisTextButton("Commit") {
     }
 }
 
-class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWindow("Revert...") {
+class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWindow("Revert commit...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()

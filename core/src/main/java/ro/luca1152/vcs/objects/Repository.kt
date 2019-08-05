@@ -93,6 +93,7 @@ class Repository(private val context: Context, name: String) {
             if (mainScreen.commitMessageTextField.text == "") {
                 uiStage.addActor(NoCommitMessageWindow(context))
             } else {
+                mainScreen.commitMessageTextField.text = ""
                 val commitTree = Tree()
                 stagedFiles.forEach {
                     commitTree.blobs[it.path()] = Blob().apply {
