@@ -14,6 +14,7 @@ import ktx.inject.Context
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.NewRepositoryWindow
+import ro.luca1152.vcs.utils.ui.OpenRepositoryWindow
 
 class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
@@ -33,6 +34,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
             }))
             addItem(MenuItem("Open...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    uiStage.addActor(OpenRepositoryWindow(context))
                 }
             }))
         })
