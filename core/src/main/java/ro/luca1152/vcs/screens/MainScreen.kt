@@ -19,19 +19,57 @@ class MainScreen(context: Context) : ScreenAdapter() {
     private val uiStage: UIStage = context.inject()
     private val skin: Skin = context.inject()
 
-    private val rootTable = Table(skin).apply {
-        setFillParent(true)
-        val menu = Menu("Menu").apply {
-            addItem(MenuItem("Item", object : ChangeListener() {
+    // Colors
+    private val bgColor = skin.getColor("t-medium-dark")
+
+    private val repositoryMenuBar = MenuBar().apply {
+        addMenu(Menu("Repository").apply {
+            addItem(MenuItem("New...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
-                    println("clicked")
                 }
             }))
-        }
-        val menuBar = MenuBar().apply {
-            addMenu(menu)
-        }
-        add(menuBar.table)
+            addItem(MenuItem("Open...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                }
+            }))
+        })
+    }
+
+    private val branchMenuBar = MenuBar().apply {
+        addMenu(Menu("Branch").apply {
+            addItem(MenuItem("Create...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                }
+            }))
+            addItem(MenuItem("Checkout...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                }
+            }))
+        })
+    }
+
+    private val actionsMenuBar = MenuBar().apply {
+        addMenu(Menu("Actions").apply {
+            addItem(MenuItem("Commit...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                }
+            }))
+            addItem(MenuItem("Merge...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                }
+            }))
+        })
+    }
+
+    private val dropDownButtonsRowTable = Table(skin).apply {
+        add(repositoryMenuBar.table)
+        add(branchMenuBar.table)
+        add(actionsMenuBar.table)
+    }
+
+    private val rootTable = Table(skin).apply {
+        setFillParent(true)
+        add(dropDownButtonsRowTable).expand().top().left()
     }
 
     init {
@@ -55,7 +93,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     private fun draw() {
-        clearScreen(1f, 1f, 1f)
+        clearScreen(bgColor.r, bgColor.g, bgColor.b)
         uiStage.draw()
     }
 }
