@@ -58,6 +58,9 @@ class MainScreen(context: Context) : ScreenAdapter() {
         addMenu(Menu("Actions").apply {
             addItem(MenuItem("Commit...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    if (::repository.isInitialized) {
+                        repository.commitStaged()
+                    }
                 }
             }))
             addItem(MenuItem("Merge...", object : ChangeListener() {

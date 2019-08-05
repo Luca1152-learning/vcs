@@ -31,19 +31,17 @@ class Repository(context: Context, private val name: String) {
         unstagedFiles.clear()
         stagedFiles.clear()
         Gdx.files.local(codePath).list().forEach {
-            if (!it.name().contains("/.vcs") && !it.isDirectory) {
+            if (!it.path().contains("/.vcs") && !it.isDirectory) {
                 if (isFileUnstaged(it)) {
                     unstagedFiles.add(it)
                 } else {
                     val hashedFileName = getHashedFileName(it)
-                    val latestCommitHashedName = appRules.latestCommitOnCurrentBranchHashedName
-                    if (latestCommitHashedName == "") {
+                    val commit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+                    if (commit == null) {
                         stagedFiles.add(it)
                     } else {
-                        val file = Gdx.files.local("$internalPath/objects/$latestCommitHashedName")
-                        val latestCommit = Json().fromJson(Commit::class.java, file.readString())
                         var foundFile = false
-                        latestCommit.tree?.blobs?.forEach {
+                        commit.tree?.blobs?.forEach {
                             if (it.value.hashedFileName == hashedFileName) {
                                 foundFile = true
                             }
@@ -62,10 +60,12 @@ class Repository(context: Context, private val name: String) {
     }
 
     fun isFileUnstaged(file: FileHandle): Boolean {
-        return !Gdx.files.local(getHashedFileName(file)).exists()
+        return !Gdx.files.local("${internalPath}/objects/${getHashedFileName(file)}").exists()
     }
 
-    fun getHashedFileName(file: FileHandle) = HashUtils.sha1("${file.path()}${file.readString()}")
+    fun getHashedFileName(file: FileHandle) = getHashedFileNameFromString("${file.path()}${file.readString()}")
+
+    fun getHashedFileNameFromString(string: String) = HashUtils.sha1(string)
 
     fun stageFile(file: FileHandle) {
         Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").writeString(file.readString(), false)
@@ -81,5 +81,47 @@ class Repository(context: Context, private val name: String) {
                 stagedFiles.remove(file)
             }
         }
+    }
+
+    fun commitStaged() {
+        val commitTree = Tree()
+        stagedFiles.forEach {
+            commitTree.blobs[it.path()] = Blob().apply {
+                hashedFileName = getHashedFileName(it)
+            }
+        }
+        stagedFiles.clear()
+
+        val latestCommit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+        if (latestCommit != null) {
+            latestCommit.tree?.blobs?.forEach {
+                if (!commitTree.blobs.containsKey(it.key)) {
+                    commitTree.blobs[it.key] = it.value
+                }
+            }
+        }
+
+        val commit = Commit().apply {
+            tree = commitTree
+            if (appRules.latestCommitOnCurrentBranchHashedName != "") {
+                headName = appRules.latestCommitOnCurrentBranchHashedName
+            }
+        }
+        val jsonCommit = Json().toJson(commit)
+        val commitFileName = getHashedFileNameFromString(jsonCommit)
+        commit.hashedFileName = commitFileName
+
+        Gdx.files.local("$internalPath/objects/$commitFileName").writeString(jsonCommit, false)
+
+        unstagedFiles.clear()
+        appRules.latestCommitOnCurrentBranchHashedName = commitFileName
+
+        mainScreen.shouldUpdateUnstagedChanges = true
+        mainScreen.shouldUpdateStagedChanges = true
+    }
+
+    fun getCommitFromHashedName(name: String): Commit? {
+        val file = Gdx.files.local("$internalPath/objects/$name")
+        return if (file.exists() && name != "") Json().fromJson(Commit::class.java, file.readString()) else null
     }
 }
