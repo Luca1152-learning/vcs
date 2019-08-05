@@ -23,7 +23,10 @@ class MyVcs : Game() {
 
     private fun initializeDependencyInjection() {
         context.run {
-            bindSingleton(Gdx.app.getPreferences("MyVcs"))
+            bindSingleton(Gdx.app.getPreferences("MyVcs").apply {
+                //                clear()
+//                flush()
+            })
             bindSingleton(AppRules(this))
             bindSingleton(this@MyVcs)
             bindSingleton(AssetManager())

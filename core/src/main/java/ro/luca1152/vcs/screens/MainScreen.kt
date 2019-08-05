@@ -3,17 +3,23 @@ package ro.luca1152.vcs.screens
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.ScreenAdapter
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
+import com.badlogic.gdx.utils.Align
+import com.github.difflib.text.DiffRowGenerator
 import com.kotcrab.vis.ui.widget.*
 import ktx.app.clearScreen
 import ktx.inject.Context
+import ro.luca1152.vcs.AppRules
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.*
+
 
 class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
@@ -150,8 +156,62 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(stagedChangesWindow).width(172f).height(225f)
     }
 
-    private val codeDiffWindow = VisWindow("Code Difference").apply {
+    private val appRules: AppRules = context.inject()
 
+    private val codeDiffLabel = Label("a", skin, "default").apply {
+        val a = VisLabel()
+
+    }
+
+    private val codeDiffWindow = object : VisWindow("Code Difference") {
+        init {
+            add(VisScrollPane(codeDiffLabel.apply { setAlignment(Align.topLeft) }).apply {
+                setScrollbarsVisible(true)
+            }).grow()
+        }
+
+        override fun act(delta: Float) {
+            super.act(delta)
+
+            if (selectedFile == null || !::repository.isInitialized) {
+                codeDiffLabel.setText("")
+            } else {
+                codeDiffLabel.setText("")
+                val generator = DiffRowGenerator.create()
+                    .showInlineDiffs(true)
+                    .mergeOriginalRevised(true)
+                    .inlineDiffByWord(true)
+                    .oldTag { f -> "[RED]---" }
+                    .newTag { f -> "[GREEN]+++" }
+                    .build()
+
+                val oldFile = if (selectedFile == null || appRules.latestCommitOnCurrentBranchHashedName == "" ||
+                    !repository.getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)!!.tree!!.blobs.containsKey(
+                        selectedFile!!.path()
+                    )
+                ) "" else
+                    repository.getContentFromHashedFileName(
+                        repository.getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)!!.tree!!.blobs.getValue(
+                            selectedFile!!.path()
+                        ).hashedFileName
+                    )
+                val newFile = selectedFile!!.readString()
+                val rows = generator.generateDiffRows(listOf(oldFile), listOf(newFile))
+                var rowCount = 1
+                var subtractsFound = 0
+                var plusesFound = 0
+                rows.forEach {
+                    val stringToAppend =
+                        "${if (subtractsFound % 2 == 0) "[LIGHT_GRAY]$rowCount${if (subtractsFound % 2 == 1) "[RED]" else if (plusesFound % 2 == 1) "[GREEN]" else "[WHITE]"}" else ""}    ${it.oldLine}"
+
+                    if (codeDiffLabel.textEquals("")) codeDiffLabel.setText(stringToAppend)
+                    else codeDiffLabel.setText("${codeDiffLabel.text}\n$stringToAppend")
+                    subtractsFound += it.oldLine.length - it.oldLine.replace("---", "").length
+                    plusesFound += it.oldLine.length - it.oldLine.replace("+++", "").length
+                    rowCount = if (subtractsFound % 2 == 0) rowCount + 1 else rowCount
+                }
+            }
+        }
     }
 
     private val commitMessageLeftColumn = VisTable().apply {
@@ -186,6 +246,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
 
     // VCS
     lateinit var repository: Repository
+    var selectedFile: FileHandle? = null
 
     init {
         uiStage.addActor(rootTable)

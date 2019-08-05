@@ -110,7 +110,9 @@ class StageButton(context: Context, file: FileHandle, isStaged: Boolean) : VisTe
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 super.clicked(event, x, y)
-                if (tapCount == 2) {
+                if (tapCount == 1) {
+                    mainScreen.selectedFile = file
+                } else if (tapCount == 2) {
                     when (isStaged) {
                         true -> mainScreen.repository.unstageFile(file)
                         false -> mainScreen.repository.stageFile(file)

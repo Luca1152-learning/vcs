@@ -150,6 +150,7 @@ class Repository(private val context: Context, private val name: String) {
 
                 mainScreen.shouldUpdateUnstagedChanges = true
                 mainScreen.shouldUpdateStagedChanges = true
+                mainScreen.selectedFile = null
 
                 uiStage.addActor(SuccessfulCommitWindow(context))
             }
