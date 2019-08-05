@@ -35,6 +35,7 @@ class Repository(private val context: Context, private val name: String) {
     fun refreshStagedFiles() {
         unstagedFiles.clear()
         stagedFiles.clear()
+
         Gdx.files.local(codePath).list().forEach {
             if (!isFileIgnored(it) && !it.isDirectory) {
                 if (isFileUnstaged(it)) {
@@ -51,13 +52,25 @@ class Repository(private val context: Context, private val name: String) {
                                 foundFile = true
                             }
                         }
-                        if (!foundFile) {
-                            stagedFiles.add(it)
+                        if (!foundFile || !commit.tree!!.blobs.containsKey(it.path())) {
+                            unstagedFiles.add(it)
                         }
                     }
                 }
             }
         }
+        getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)?.tree?.blobs?.forEach {
+            var isFileDeleted = true
+            Gdx.files.local(codePath).list().forEach { file ->
+                if (file.path() == it.key) {
+                    isFileDeleted = false
+                }
+            }
+            if (isFileDeleted) {
+                unstagedFiles.add(Gdx.files.local(it.key))
+            }
+        }
+
         mainScreen.run {
             shouldUpdateStagedChanges = true
             shouldUpdateUnstagedChanges = true
@@ -73,7 +86,9 @@ class Repository(private val context: Context, private val name: String) {
     fun getHashedFileNameFromString(string: String) = HashUtils.sha1(string)
 
     fun stageFile(file: FileHandle) {
-        Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").writeString(file.readString(), false)
+        if (file.exists()) {
+            Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").writeString(file.readString(), false)
+        }
         stagedFiles.add(file)
         unstagedFiles.remove(file)
     }
@@ -95,8 +110,14 @@ class Repository(private val context: Context, private val name: String) {
             } else {
                 val commitTree = Tree()
                 stagedFiles.forEach {
-                    commitTree.blobs[it.path()] = Blob().apply {
-                        hashedFileName = getHashedFileName(it)
+                    if (it.exists()) {
+                        commitTree.blobs[it.path()] = Blob().apply {
+                            hashedFileName = getHashedFileName(it)
+                        }
+                    } else {
+                        commitTree.blobs[it.path()] = Blob().apply {
+                            hashedFileName = getHashedFileNameFromString(it.path())
+                        }
                     }
                 }
                 stagedFiles.clear()
@@ -149,6 +170,7 @@ class Repository(private val context: Context, private val name: String) {
     fun revertToCommit(commit: Commit) {
         deleteAllCode()
         commit.tree?.blobs?.forEach {
+            val newValue = getContentFromHashedFileName(it.value.hashedFileName)
             Gdx.files.local(it.key).writeString(getContentFromHashedFileName(it.value.hashedFileName), false)
         }
         refreshStagedFiles()
@@ -164,11 +186,12 @@ class Repository(private val context: Context, private val name: String) {
 
     fun isFileIgnored(file: FileHandle): Boolean {
         if (file.path().contains("/.vcs")) return true
-        val ignoreFile = Gdx.files.local("$codePath/.ignore").readString()
-        ignoreFile.split(System.getProperty("line.separator")).forEach {
-            println("$it vs ${file.path()}")
-            if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return true
-            else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return true
+        val ignoreFile = Gdx.files.local("$codePath/.ignore")
+        if (ignoreFile.exists()) {
+            ignoreFile.readString().split(System.getProperty("line.separator")).forEach {
+                if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return true
+                else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return true
+            }
         }
         return false
     }
