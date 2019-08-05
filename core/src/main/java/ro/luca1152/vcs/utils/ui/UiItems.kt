@@ -321,3 +321,48 @@ class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScr
         height = 130f
     }
 }
+
+class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+    private val mainScreen: MainScreen = context.inject()
+
+    private val repositoryNameLabel = VisLabel("Name:")
+    private val repositoryNameField = VisTextField()
+    private val repositoryNameTable = VisTable().apply {
+        add(repositoryNameLabel).padRight(5f)
+        add(repositoryNameField)
+    }
+    private val cancelButton = VisTextButton("Cancel").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@NewBranchWindow.remove()
+            }
+        })
+    }
+    private val createButton = VisTextButton("Create").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                mainScreen.repository = Repository(context, repositoryNameField.text).apply {
+                    initialize()
+                }
+                this@NewBranchWindow.remove()
+            }
+        })
+    }
+    private val buttonsTable = VisTable().apply {
+        add(cancelButton).padRight(5f)
+        add(createButton)
+    }
+
+    init {
+        add(repositoryNameTable).padBottom(10f).row()
+        add(buttonsTable).expand().right()
+        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
+        width = 210f
+        height = 90f
+    }
+}
+

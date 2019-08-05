@@ -25,6 +25,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
     private val uiStage: UIStage = context.inject()
     private val skin: Skin = context.inject()
+    private val appRules: AppRules = context.inject()
 
     // Colors
     private val bgColor = skin.getColor("t-medium-dark")
@@ -49,6 +50,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
         addMenu(Menu("Branch").apply {
             addItem(MenuItem("Create...", object : ChangeListener() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    uiStage.addActor(NewBranchWindow(context))
                 }
             }))
             addItem(MenuItem("Checkout...", object : ChangeListener() {
@@ -150,24 +152,14 @@ class MainScreen(context: Context) : ScreenAdapter() {
             }
         }
     }
-
     private val stagingLeftColumn = Table(skin).apply {
         add(unstagedChangesWindow).width(172f).height(225f).padBottom(10f).row()
         add(stagedChangesWindow).width(172f).height(225f)
     }
-
-    private val appRules: AppRules = context.inject()
-
-    private val codeDiffLabel = Label("a", skin, "default").apply {
-        val a = VisLabel()
-
-    }
-
+    private val codeDiffLabel = Label("a", skin, "default")
     private val codeDiffWindow = object : VisWindow("Code Difference") {
         init {
-            add(VisScrollPane(codeDiffLabel.apply { setAlignment(Align.topLeft) }).apply {
-                setScrollbarsVisible(true)
-            }).grow()
+            add(VisScrollPane(codeDiffLabel.apply { setAlignment(Align.topLeft) })).grow()
         }
 
         override fun act(delta: Float) {
