@@ -36,8 +36,4 @@ class LoadingScreen(private val context: Context) : ScreenAdapter() {
     private fun changeScreen() {
         myVcs.screen = context.inject<MainScreen>()
     }
-
-    private fun update() {
-        manager.update()
-    }
 }
