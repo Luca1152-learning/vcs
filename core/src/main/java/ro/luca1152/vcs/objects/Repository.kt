@@ -163,13 +163,14 @@ class Repository(private val context: Context, private val name: String) {
     }
 
     fun isFileIgnored(file: FileHandle): Boolean {
-        if (file.path().contains("/.vcs")) return false
+        if (file.path().contains("/.vcs")) return true
         val ignoreFile = Gdx.files.local("$codePath/.ignore").readString()
-        ignoreFile.split("\\r?\\n").forEach {
-            if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return false
-            else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return false
-            else if (file.path().substring(0, file.path().length - 2).startsWith(it)) return false
+        ignoreFile.split(System.getProperty("line.separator")).forEach {
+            println("$it vs ${file.path()}")
+            if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return true
+            else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return true
+            else if (file.path().substring(0, file.path().length - 2).startsWith(it)) return true
         }
-        return true
+        return false
     }
 }
