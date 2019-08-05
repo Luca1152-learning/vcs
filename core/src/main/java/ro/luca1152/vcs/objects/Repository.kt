@@ -10,7 +10,7 @@ import ro.luca1152.vcs.utils.HashUtils
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.NoCommitMessageWindow
 import ro.luca1152.vcs.utils.ui.NothingToCommitWindow
-import ro.luca1152.vcs.utils.ui.SuccesfulCommitWindow
+import ro.luca1152.vcs.utils.ui.SuccessfulCommitWindow
 
 class Repository(private val context: Context, name: String) {
     // Injected objects
@@ -129,7 +129,7 @@ class Repository(private val context: Context, name: String) {
                 mainScreen.shouldUpdateUnstagedChanges = true
                 mainScreen.shouldUpdateStagedChanges = true
 
-                uiStage.addActor(SuccesfulCommitWindow(context))
+                uiStage.addActor(SuccessfulCommitWindow(context))
             }
         } else {
             uiStage.addActor(NothingToCommitWindow(context))
@@ -139,5 +139,30 @@ class Repository(private val context: Context, name: String) {
     fun getCommitFromHashedName(name: String): Commit? {
         val file = Gdx.files.local("$internalPath/objects/$name")
         return if (file.exists() && name != "") Json().fromJson(Commit::class.java, file.readString()) else null
+    }
+
+    fun getContentFromHashedFileName(hashedFileName: String): String {
+        return Gdx.files.local("$internalPath/objects/$hashedFileName").readString()
+    }
+
+    fun revertToCommit(commit: Commit) {
+        deleteAllCode()
+        commit.tree?.blobs?.forEach {
+            Gdx.files.local(it.key).writeString(getContentFromHashedFileName(it.value.hashedFileName), false)
+        }
+        refreshStagedFiles()
+    }
+
+    fun deleteAllCode() {
+        Gdx.files.local(codePath).list().forEach {
+            if (!it.isDirectory && !isFileIgnored(it)) {
+                it.delete()
+            }
+        }
+    }
+
+    fun isFileIgnored(file: FileHandle): Boolean {
+        if (file.path().contains("/.vcs")) return true
+        return false
     }
 }

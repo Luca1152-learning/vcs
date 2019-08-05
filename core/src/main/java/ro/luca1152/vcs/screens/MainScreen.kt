@@ -65,6 +65,11 @@ class MainScreen(context: Context) : ScreenAdapter() {
                 override fun changed(event: ChangeEvent?, actor: Actor?) {
                 }
             }))
+            addItem(MenuItem("Revert...", object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    uiStage.addActor(RevertWindow(context, this@MainScreen))
+                }
+            }))
         })
     }
 
