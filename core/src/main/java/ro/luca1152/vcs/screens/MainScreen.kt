@@ -159,7 +159,9 @@ class MainScreen(context: Context) : ScreenAdapter() {
     private val codeDiffLabel = Label("a", skin, "default")
     private val codeDiffWindow = object : VisWindow("Code Difference") {
         init {
-            add(VisScrollPane(codeDiffLabel.apply { setAlignment(Align.topLeft) })).grow()
+            add(VisScrollPane(codeDiffLabel.apply {
+                setAlignment(Align.topLeft)
+            })).grow()
         }
 
         override fun act(delta: Float) {
@@ -187,7 +189,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
                             selectedFile!!.path()
                         ).hashedFileName
                     )
-                val newFile = selectedFile!!.readString()
+                val newFile = if (selectedFile!!.exists()) selectedFile!!.readString() else ""
                 val rows = generator.generateDiffRows(listOf(oldFile), listOf(newFile))
                 var rowCount = 1
                 var subtractsFound = 0

@@ -70,7 +70,11 @@ class Repository(private val context: Context, private val name: String) {
                                 }
                             }
                             if (!foundFile || !commit.tree!!.blobs.containsKey(it.path())) {
-                                unstagedFiles.add(it)
+                                if (Gdx.files.local("$internalPath/objects/$hashedFileName").exists()) {
+                                    stagedFiles.add(it)
+                                } else {
+                                    unstagedFiles.add(it)
+                                }
                             }
                         }
                     }
@@ -85,7 +89,11 @@ class Repository(private val context: Context, private val name: String) {
                 }
             }
             if (isFileDeleted) {
-                unstagedFiles.add(Gdx.files.local(it.key))
+                if (!previousStagedFiles.contains(Gdx.files.local(it.key))) {
+                    unstagedFiles.add(Gdx.files.local(it.key))
+                } else {
+                    stagedFiles.add(Gdx.files.local(it.key))
+                }
             }
         }
 
@@ -95,13 +103,14 @@ class Repository(private val context: Context, private val name: String) {
                 shouldUpdateUnstagedChanges = true
             }
         }
+
     }
 
-    fun isFileUnstaged(file: FileHandle): Boolean {
+    private fun isFileUnstaged(file: FileHandle): Boolean {
         return !Gdx.files.local("${internalPath}/objects/${getHashedFileName(file)}").exists()
     }
 
-    fun getHashedFileName(file: FileHandle) = getHashedFileNameFromString("${file.path()}${file.readString()}")
+    private fun getHashedFileName(file: FileHandle) = getHashedFileNameFromString("${file.path()}${file.readString()}")
 
     fun getHashedFileNameFromString(string: String) = HashUtils.sha1(string)
 
@@ -109,17 +118,23 @@ class Repository(private val context: Context, private val name: String) {
         if (file.exists()) {
             Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").writeString(file.readString(), false)
         }
+        print("stage... ${stagedFiles.size} -> ")
         stagedFiles.add(file)
         unstagedFiles.remove(file)
     }
 
     fun unstageFile(file: FileHandle) {
-        Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").run {
-            if (exists()) {
-                delete()
-                unstagedFiles.add(file)
-                stagedFiles.remove(file)
+        if (file.exists()) {
+            Gdx.files.local("$internalPath/objects/${getHashedFileName(file)}").run {
+                if (exists()) {
+                    delete()
+                    unstagedFiles.add(file)
+                    stagedFiles.remove(file)
+                }
             }
+        } else {
+            unstagedFiles.add(file)
+            stagedFiles.remove(file)
         }
     }
 
@@ -153,6 +168,15 @@ class Repository(private val context: Context, private val name: String) {
 
                 val commit = Commit().apply {
                     tree = commitTree
+                    val blobKeysToRemove = arrayListOf<String>()
+                    tree!!.blobs.forEach {
+                        if (!Gdx.files.local(it.key).exists()) {
+                            blobKeysToRemove.add(it.key)
+                        }
+                    }
+                    blobKeysToRemove.forEach {
+                        tree!!.blobs.remove(it)
+                    }
                     if (config.getLatestCommitForCurrentBranch() != "") {
                         headName = config.getLatestCommitForCurrentBranch()
                     }
@@ -196,7 +220,7 @@ class Repository(private val context: Context, private val name: String) {
         refreshStagedFiles()
     }
 
-    fun deleteAllCode() {
+    private fun deleteAllCode() {
         Gdx.files.local(codePath).list().forEach {
             if (!it.isDirectory && !isFileIgnored(it) && it.name() != "$codePath/.ignore") {
                 it.delete()

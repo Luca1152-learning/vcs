@@ -13,6 +13,10 @@ class Config {
 
     fun setLatestCommitForCurrentBranch(repository: Repository, commitFileName: String) {
         latestCommit[currentBranch] = commitFileName
+        flush(repository)
+    }
+
+    fun flush(repository: Repository) {
         Gdx.files.local("${repository.internalPath}/.config").writeString(Json().prettyPrint(this), false)
     }
 }
