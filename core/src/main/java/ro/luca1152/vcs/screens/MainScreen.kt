@@ -13,9 +13,7 @@ import ktx.app.clearScreen
 import ktx.inject.Context
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
-import ro.luca1152.vcs.utils.ui.NewRepositoryWindow
-import ro.luca1152.vcs.utils.ui.OpenRepositoryWindow
-import ro.luca1152.vcs.utils.ui.StageButton
+import ro.luca1152.vcs.utils.ui.*
 
 class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
@@ -142,7 +140,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
         }
     }
 
-    private val leftColumn = Table(skin).apply {
+    private val stagingLeftColumn = Table(skin).apply {
         add(unstagedChangesWindow).width(172f).height(225f).padBottom(10f).row()
         add(stagedChangesWindow).width(172f).height(225f)
     }
@@ -151,15 +149,34 @@ class MainScreen(context: Context) : ScreenAdapter() {
 
     }
 
-    private val rightColum = Table(skin).apply {
-        add(codeDiffWindow).width(713f).height(261f)
+    private val commitMessageLeftColumn = VisTable().apply {
+        add(RescanButton()).growX().expandY().row()
+        add(CommitButton()).growX().expandY().row()
+    }
+
+    private val commitMessageTextField = VisTextField()
+
+    private val commitMessageRightColumn = VisTable().apply {
+        add(VisWindow("Commit Message: ").apply {
+            add(commitMessageTextField).grow().padBottom(5f)
+        }).grow()
+    }
+
+    private val commitMessageTable = VisTable().apply {
+        add(commitMessageLeftColumn).padLeft(-10f).growY()
+        add(commitMessageRightColumn).padLeft(20f).grow()
+    }
+
+    private val rightColumn = Table(skin).apply {
+        add(codeDiffWindow).width(713f).height(380f).row()
+        add(commitMessageTable).grow().height(70f).padTop(10f)
     }
 
     private val rootTable = Table(skin).apply {
         setFillParent(true)
-        add(dropDownButtonsRowTable).top().left().padLeft(7f).row()
-        add(leftColumn).expand().left().top()
-        add(rightColum).expand().right().top()
+        add(dropDownButtonsRowTable).top().left().padLeft(15f).row()
+        add(stagingLeftColumn).expand().left().top()
+        add(rightColumn).expand().right().top()
     }
 
     // VCS

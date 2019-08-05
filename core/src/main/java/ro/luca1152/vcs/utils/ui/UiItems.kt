@@ -168,3 +168,25 @@ class NothingToCommitWindow(context: Context) : VisWindow("") {
         height = 90f
     }
 }
+
+class RescanButton : VisTextButton("Rescan") {
+    init {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                println("Rescan")
+            }
+        })
+    }
+}
+
+class CommitButton : VisTextButton("Commit") {
+    init {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                println("Commit")
+            }
+        })
+    }
+}
