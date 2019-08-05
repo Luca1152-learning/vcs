@@ -15,7 +15,7 @@ import com.github.difflib.text.DiffRowGenerator
 import com.kotcrab.vis.ui.widget.*
 import ktx.app.clearScreen
 import ktx.inject.Context
-import ro.luca1152.vcs.AppRules
+import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.*
@@ -25,7 +25,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     // Injected objects
     private val uiStage: UIStage = context.inject()
     private val skin: Skin = context.inject()
-    private val appRules: AppRules = context.inject()
+    private val config: Config = context.inject()
 
     // Colors
     private val bgColor = skin.getColor("t-medium-dark")
@@ -173,17 +173,17 @@ class MainScreen(context: Context) : ScreenAdapter() {
                     .showInlineDiffs(true)
                     .mergeOriginalRevised(true)
                     .inlineDiffByWord(true)
-                    .oldTag { f -> "[RED]---" }
-                    .newTag { f -> "[GREEN]+++" }
+                    .oldTag { "[RED]---" }
+                    .newTag { "[GREEN]+++" }
                     .build()
 
-                val oldFile = if (selectedFile == null || appRules.latestCommitOnCurrentBranchHashedName == "" ||
-                    !repository.getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)!!.tree!!.blobs.containsKey(
+                val oldFile = if (selectedFile == null || config.getLatestCommitForCurrentBranch() == "" ||
+                    !repository.getCommitFromHashedName(config.getLatestCommitForCurrentBranch())!!.tree!!.blobs.containsKey(
                         selectedFile!!.path()
                     )
                 ) "" else
                     repository.getContentFromHashedFileName(
-                        repository.getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)!!.tree!!.blobs.getValue(
+                        repository.getCommitFromHashedName(config.getLatestCommitForCurrentBranch())!!.tree!!.blobs.getValue(
                             selectedFile!!.path()
                         ).hashedFileName
                     )

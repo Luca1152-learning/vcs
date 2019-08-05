@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.utils.Json
 import ktx.inject.Context
-import ro.luca1152.vcs.AppRules
+import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.screens.MainScreen
 import ro.luca1152.vcs.utils.HashUtils
 import ro.luca1152.vcs.utils.UIStage
@@ -14,22 +14,30 @@ import ro.luca1152.vcs.utils.ui.SuccessfulCommitWindow
 
 class Repository(private val context: Context, private val name: String) {
     // Injected objects
-    private val appRules: AppRules = context.inject()
+    private val config: Config = context.inject()
     private val mainScreen: MainScreen = context.inject()
     private val uiStage: UIStage = context.inject()
 
-    private val internalPath = "$name/.vcs"
+    val internalPath = "$name/.vcs"
     private val codePath = name
 
     val unstagedFiles = arrayListOf<FileHandle>()
     val stagedFiles = arrayListOf<FileHandle>()
 
     fun initialize() {
-        Gdx.files.local("$internalPath/a").run {
-            writeString("a", false)
+        Gdx.files.local("$internalPath/objects/a").run {
+            writeString("", false)
             delete()
         }
         Gdx.files.local("$codePath/.ignore").writeString("", false)
+
+        config.run {
+            branches.add("master")
+            currentBranch = "master"
+            latestCommit["master"] = ""
+        }
+        val json = Json().toJson(config)
+//        Gdx.files.local("$internalPath/.config").writeString(Json().toJson(config), false)
     }
 
     fun refreshStagedFiles() {
@@ -42,7 +50,7 @@ class Repository(private val context: Context, private val name: String) {
                     unstagedFiles.add(it)
                 } else {
                     val hashedFileName = getHashedFileName(it)
-                    val commit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+                    val commit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
                     if (commit == null) {
                         stagedFiles.add(it)
                     } else {
@@ -59,7 +67,7 @@ class Repository(private val context: Context, private val name: String) {
                 }
             }
         }
-        getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)?.tree?.blobs?.forEach {
+        getCommitFromHashedName(config.getLatestCommitForCurrentBranch())?.tree?.blobs?.forEach {
             var isFileDeleted = true
             Gdx.files.local(codePath).list().forEach { file ->
                 if (file.path() == it.key) {
@@ -122,7 +130,7 @@ class Repository(private val context: Context, private val name: String) {
                 }
                 stagedFiles.clear()
 
-                val latestCommit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+                val latestCommit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
                 if (latestCommit != null) {
                     latestCommit.tree?.blobs?.forEach {
                         if (!commitTree.blobs.containsKey(it.key)) {
@@ -133,8 +141,8 @@ class Repository(private val context: Context, private val name: String) {
 
                 val commit = Commit().apply {
                     tree = commitTree
-                    if (appRules.latestCommitOnCurrentBranchHashedName != "") {
-                        headName = appRules.latestCommitOnCurrentBranchHashedName
+                    if (config.getLatestCommitForCurrentBranch() != "") {
+                        headName = config.getLatestCommitForCurrentBranch()
                     }
                     message = mainScreen.commitMessageTextField.text
                     mainScreen.commitMessageTextField.text = ""
@@ -146,7 +154,7 @@ class Repository(private val context: Context, private val name: String) {
                 Gdx.files.local("$internalPath/objects/$commitFileName").writeString(jsonCommit, false)
 
                 stagedFiles.clear()
-                appRules.latestCommitOnCurrentBranchHashedName = commitFileName
+                config.setLatestCommitForCurrentBranch(this, commitFileName)
 
                 mainScreen.shouldUpdateUnstagedChanges = true
                 mainScreen.shouldUpdateStagedChanges = true
@@ -171,7 +179,6 @@ class Repository(private val context: Context, private val name: String) {
     fun revertToCommit(commit: Commit) {
         deleteAllCode()
         commit.tree?.blobs?.forEach {
-            val newValue = getContentFromHashedFileName(it.value.hashedFileName)
             Gdx.files.local(it.key).writeString(getContentFromHashedFileName(it.value.hashedFileName), false)
         }
         refreshStagedFiles()
@@ -185,7 +192,7 @@ class Repository(private val context: Context, private val name: String) {
         }
     }
 
-    fun isFileIgnored(file: FileHandle): Boolean {
+    private fun isFileIgnored(file: FileHandle): Boolean {
         if (file.path().contains("/.vcs")) return true
         val ignoreFile = Gdx.files.local("$codePath/.ignore")
         if (ignoreFile.exists()) {

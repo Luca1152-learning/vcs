@@ -1,12 +1,14 @@
 package ro.luca1152.vcs.utils.ui
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Json
 import com.kotcrab.vis.ui.widget.*
 import ktx.inject.Context
-import ro.luca1152.vcs.AppRules
+import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.objects.Commit
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.screens.MainScreen
@@ -61,6 +63,7 @@ class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val mainScreen: MainScreen = context.inject()
+    private val config: Config = context.inject()
 
     private val repositoryNameLabel = VisLabel("Name:")
     private val repositoryNameField = VisTextField()
@@ -82,6 +85,12 @@ class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
                 super.clicked(event, x, y)
                 mainScreen.repository = Repository(context, repositoryNameField.text).apply {
                     refreshStagedFiles()
+                }
+                val newConfig = Json().fromJson(Config::class.java, Gdx.files.local("${mainScreen.repository.internalPath}/.config"))
+                config.run {
+                    latestCommit = newConfig.latestCommit
+                    branches = newConfig.branches
+                    currentBranch = newConfig.currentBranch
                 }
                 this@OpenRepositoryWindow.remove()
             }
@@ -226,7 +235,7 @@ class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWi
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()
-    private val appRules: AppRules = context.inject()
+    private val config: Config = context.inject()
 
     private val previousCommitsTable = VisTable().apply {
         val commits = getAllCommits()
@@ -262,7 +271,7 @@ class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWi
         val commitsList = arrayListOf<Commit>()
         try {
             mainScreen.repository.run {
-                var latestCommit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+                var latestCommit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
                 while (latestCommit != null) {
                     commitsList.add(latestCommit)
                     latestCommit = getCommitFromHashedName(latestCommit.headName)

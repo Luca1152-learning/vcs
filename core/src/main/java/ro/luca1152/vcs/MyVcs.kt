@@ -1,12 +1,12 @@
 package ro.luca1152.vcs
 
 import com.badlogic.gdx.Game
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.kotcrab.vis.ui.VisUI
 import ktx.inject.Context
+import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.screens.LoadingScreen
 import ro.luca1152.vcs.utils.UICamera
 import ro.luca1152.vcs.utils.UIStage
@@ -23,11 +23,7 @@ class MyVcs : Game() {
 
     private fun initializeDependencyInjection() {
         context.run {
-            bindSingleton(Gdx.app.getPreferences("MyVcs").apply {
-                //                clear()
-//                flush()
-            })
-            bindSingleton(AppRules(this))
+            bindSingleton(Config())
             bindSingleton(this@MyVcs)
             bindSingleton(AssetManager())
             bindSingleton(SpriteBatch() as Batch)
