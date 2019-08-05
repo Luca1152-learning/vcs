@@ -159,6 +159,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     private val codeDiffLabel = Label("a", skin, "default")
     private val codeDiffWindow = object : VisWindow("Code Difference") {
         init {
+            this.titleTable.add(VisLabel("abc"))
             add(VisScrollPane(codeDiffLabel.apply {
                 setAlignment(Align.topLeft)
             })).grow()
@@ -166,6 +167,14 @@ class MainScreen(context: Context) : ScreenAdapter() {
 
         override fun act(delta: Float) {
             super.act(delta)
+
+            titleTable.run {
+                clear()
+                add(VisLabel("Code Difference")).expand().left()
+                if (config.currentBranch != "") {
+                    add(VisLabel("Current Branch: ${config.currentBranch}"))
+                }
+            }
 
             if (selectedFile == null || !::repository.isInitialized) {
                 codeDiffLabel.setText("")

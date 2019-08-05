@@ -320,13 +320,13 @@ class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScr
 class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
-    private val mainScreen: MainScreen = context.inject()
+    private val config: Config = context.inject()
 
-    private val repositoryNameLabel = VisLabel("Name:")
-    private val repositoryNameField = VisTextField()
-    private val repositoryNameTable = VisTable().apply {
-        add(repositoryNameLabel).padRight(5f)
-        add(repositoryNameField)
+    private val branchNameLabel = VisLabel("Name:")
+    private val branchNameField = VisTextField()
+    private val branchNameTable = VisTable().apply {
+        add(branchNameLabel).padRight(5f)
+        add(branchNameField)
     }
     private val cancelButton = VisTextButton("Cancel").apply {
         addListener(object : ClickListener() {
@@ -340,8 +340,13 @@ class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 super.clicked(event, x, y)
-                mainScreen.repository = Repository(context, repositoryNameField.text).apply {
-                    initialize()
+                val newBranchName = branchNameField.text
+                config.run {
+                    var previousHead = getLatestCommitForCurrentBranch()
+                    branches.add(newBranchName)
+                    currentBranch = newBranchName
+                    latestCommit[newBranchName] = ""
+                    setLatestCommitForCurrentBranch(context.inject<MainScreen>().repository, previousHead)
                 }
                 this@NewBranchWindow.remove()
             }
@@ -353,7 +358,7 @@ class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
     }
 
     init {
-        add(repositoryNameTable).padBottom(10f).row()
+        add(branchNameTable).padBottom(10f).row()
         add(buttonsTable).expand().right()
         setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
         width = 210f
