@@ -4,12 +4,11 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
-import com.kotcrab.vis.ui.widget.Menu
-import com.kotcrab.vis.ui.widget.MenuBar
-import com.kotcrab.vis.ui.widget.MenuItem
+import com.kotcrab.vis.ui.widget.*
 import ktx.app.clearScreen
 import ktx.inject.Context
 import ro.luca1152.vcs.utils.UIStage
@@ -67,9 +66,38 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(actionsMenuBar.table)
     }
 
+    private val unstagedChangesWindow = VisWindow("Unstaged Changes").apply {
+        val scrollPane = ScrollPane(VisTable(), skin, "list").apply {
+            setFlickScroll(false)
+            fadeScrollBars = false
+        }
+    }
+
+    private val stagedChangesWindow = VisWindow("Staged Changes").apply {
+        val scrollPane = ScrollPane(VisTable(), skin, "list").apply {
+            setFlickScroll(false)
+            fadeScrollBars = false
+        }
+    }
+
+    private val leftColumn = Table(skin).apply {
+        add(unstagedChangesWindow).width(172f).height(225f).padBottom(10f).row()
+        add(stagedChangesWindow).width(172f).height(225f)
+    }
+
+    private val codeDiffWindow = VisWindow("Code Difference").apply {
+
+    }
+
+    private val rightColum = Table(skin).apply {
+        add(codeDiffWindow).width(713f).height(261f)
+    }
+
     private val rootTable = Table(skin).apply {
         setFillParent(true)
-        add(dropDownButtonsRowTable).expand().top().left()
+        add(dropDownButtonsRowTable).top().left().padLeft(7f).row()
+        add(leftColumn).expand().left().top()
+        add(rightColum).expand().right().top()
     }
 
     init {
