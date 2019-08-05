@@ -1,3 +1,6 @@
 package ro.luca1152.vcs.objects
 
-class Tree
+class Tree : VcsObject("tree") {
+    // String = file name; Blob = hashed content
+    var blobs = mapOf<String, Blob>()
+}

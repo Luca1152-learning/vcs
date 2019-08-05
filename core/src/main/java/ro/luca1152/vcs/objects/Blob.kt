@@ -1,3 +1,5 @@
 package ro.luca1152.vcs.objects
 
-class Blob
+class Blob : VcsObject("blob") {
+    var content = ""
+}

@@ -31,7 +31,7 @@ class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 super.clicked(event, x, y)
-                mainScreen.repository = Repository(repositoryNameField.text).apply {
+                mainScreen.repository = Repository(context, repositoryNameField.text).apply {
                     initialize()
                 }
                 this@NewRepositoryWindow.remove()
@@ -71,18 +71,20 @@ class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
             }
         })
     }
-    private val createButton = VisTextButton("Create").apply {
+    private val openButton = VisTextButton("Open").apply {
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 super.clicked(event, x, y)
-                mainScreen.repository = Repository(repositoryNameField.text)
+                mainScreen.repository = Repository(context, repositoryNameField.text).apply {
+                    refreshStagedFiles()
+                }
                 this@OpenRepositoryWindow.remove()
             }
         })
     }
     private val buttonsTable = VisTable().apply {
         add(cancelButton).padRight(5f)
-        add(createButton)
+        add(openButton)
     }
 
     init {

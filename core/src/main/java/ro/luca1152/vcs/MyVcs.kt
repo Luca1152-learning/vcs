@@ -1,6 +1,7 @@
 package ro.luca1152.vcs
 
 import com.badlogic.gdx.Game
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -22,6 +23,8 @@ class MyVcs : Game() {
 
     private fun initializeDependencyInjection() {
         context.run {
+            bindSingleton(Gdx.app.getPreferences("MyVcs"))
+            bindSingleton(AppRules(this))
             bindSingleton(this@MyVcs)
             bindSingleton(AssetManager())
             bindSingleton(SpriteBatch() as Batch)
