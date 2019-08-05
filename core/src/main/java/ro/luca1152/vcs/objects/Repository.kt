@@ -123,7 +123,7 @@ class Repository(private val context: Context, name: String) {
 
                 Gdx.files.local("$internalPath/objects/$commitFileName").writeString(jsonCommit, false)
 
-                unstagedFiles.clear()
+                stagedFiles.clear()
                 appRules.latestCommitOnCurrentBranchHashedName = commitFileName
 
                 mainScreen.shouldUpdateUnstagedChanges = true
