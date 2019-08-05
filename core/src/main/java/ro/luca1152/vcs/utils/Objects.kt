@@ -6,5 +6,5 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport
 import ktx.inject.Context
 
 class UICamera : OrthographicCamera()
-class UIViewport(context: Context) : ExtendViewport(700f, 700f, context.inject<UICamera>())
+class UIViewport(context: Context) : ExtendViewport(895f, 487f, context.inject<UICamera>())
 class UIStage(context: Context) : Stage(context.inject<UIViewport>(), context.inject())

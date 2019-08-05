@@ -12,8 +12,8 @@ object DesktopLauncher {
         get() {
             val configuration = LwjglApplicationConfiguration()
             configuration.title = "vcs"
-            configuration.width = 700
-            configuration.height = 700
+            configuration.width = 895
+            configuration.height = 487
             for (size in intArrayOf(128, 64, 32, 16)) {
                 configuration.addIcon("libgdx$size.png", FileType.Internal)
             }
