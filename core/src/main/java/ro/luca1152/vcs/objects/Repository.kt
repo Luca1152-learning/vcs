@@ -36,32 +36,42 @@ class Repository(private val context: Context, private val name: String) {
             currentBranch = "master"
             latestCommit["master"] = ""
         }
-        val json = Json().toJson(config)
-//        Gdx.files.local("$internalPath/.config").writeString(Json().toJson(config), false)
+        Gdx.files.local("$internalPath/.config").writeString(Json().toJson(config), false)
     }
 
     fun refreshStagedFiles() {
+        val previousUnstagedFiles = arrayListOf<FileHandle>()
+        unstagedFiles.forEach {
+            previousUnstagedFiles.add(it)
+        }
+        val previousStagedFiles = arrayListOf<FileHandle>()
+        stagedFiles.forEach {
+            previousStagedFiles.add(it)
+        }
+
         unstagedFiles.clear()
         stagedFiles.clear()
 
         Gdx.files.local(codePath).list().forEach {
-            if (!isFileIgnored(it) && !it.isDirectory) {
-                if (isFileUnstaged(it)) {
-                    unstagedFiles.add(it)
-                } else {
-                    val hashedFileName = getHashedFileName(it)
-                    val commit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
-                    if (commit == null) {
-                        stagedFiles.add(it)
+            if (it.name() != "New Text Document.txt") {
+                if (!isFileIgnored(it) && !it.isDirectory) {
+                    if (isFileUnstaged(it)) {
+                        unstagedFiles.add(it)
                     } else {
-                        var foundFile = false
-                        commit.tree?.blobs?.forEach {
-                            if (it.value.hashedFileName == hashedFileName) {
-                                foundFile = true
+                        val hashedFileName = getHashedFileName(it)
+                        val commit = getCommitFromHashedName(config.getLatestCommitForCurrentBranch())
+                        if (commit == null) {
+                            stagedFiles.add(it)
+                        } else {
+                            var foundFile = false
+                            commit.tree?.blobs?.forEach {
+                                if (it.value.hashedFileName == hashedFileName) {
+                                    foundFile = true
+                                }
                             }
-                        }
-                        if (!foundFile || !commit.tree!!.blobs.containsKey(it.path())) {
-                            unstagedFiles.add(it)
+                            if (!foundFile || !commit.tree!!.blobs.containsKey(it.path())) {
+                                unstagedFiles.add(it)
+                            }
                         }
                     }
                 }
@@ -79,9 +89,11 @@ class Repository(private val context: Context, private val name: String) {
             }
         }
 
-        mainScreen.run {
-            shouldUpdateStagedChanges = true
-            shouldUpdateUnstagedChanges = true
+        if (previousStagedFiles.size != stagedFiles.size || previousUnstagedFiles.size != unstagedFiles.size) {
+            mainScreen.run {
+                shouldUpdateStagedChanges = true
+                shouldUpdateUnstagedChanges = true
+            }
         }
     }
 

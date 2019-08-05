@@ -203,20 +203,6 @@ class NoCommitMessageWindow(context: Context) : VisWindow("") {
     }
 }
 
-class RescanButton(mainScreen: MainScreen) : VisTextButton("Rescan") {
-    init {
-        addListener(object : ClickListener() {
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                super.clicked(event, x, y)
-                try {
-                    mainScreen.repository.refreshStagedFiles()
-                } catch (e: Throwable) {
-                }
-            }
-        })
-    }
-}
-
 class CommitButton(mainScreen: MainScreen) : VisTextButton("Commit") {
     init {
         addListener(object : ClickListener() {

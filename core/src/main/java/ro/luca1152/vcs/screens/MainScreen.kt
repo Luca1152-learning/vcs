@@ -207,8 +207,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     private val commitMessageLeftColumn = VisTable().apply {
-        add(RescanButton(this@MainScreen)).growX().expandY().row()
-        add(CommitButton(this@MainScreen)).growX().expandY().row()
+        add(CommitButton(this@MainScreen)).grow().row()
     }
 
     val commitMessageTextField = VisTextField()
@@ -220,13 +219,13 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     private val commitMessageTable = VisTable().apply {
-        add(commitMessageLeftColumn).padLeft(-10f).growY()
-        add(commitMessageRightColumn).padLeft(20f).grow()
+        add(commitMessageRightColumn).padLeft(-38f).width(637f)
+        add(commitMessageLeftColumn).padLeft(5f).height(58f)
     }
 
     private val rightColumn = Table(skin).apply {
-        add(codeDiffWindow).width(713f).height(380f).row()
-        add(commitMessageTable).grow().height(70f).padTop(10f)
+        add(codeDiffWindow).width(713f).height(390f).row()
+        add(commitMessageTable).grow().height(70f).padTop(4f)
     }
 
     private val rootTable = Table(skin).apply {
@@ -257,6 +256,9 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     private fun update(delta: Float) {
+        if (::repository.isInitialized) {
+            repository.refreshStagedFiles()
+        }
         uiStage.act(delta)
     }
 
