@@ -169,7 +169,6 @@ class Repository(private val context: Context, private val name: String) {
             println("$it vs ${file.path()}")
             if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return true
             else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return true
-            else if (file.path().substring(0, file.path().length - 2).startsWith(it)) return true
         }
         return false
     }
