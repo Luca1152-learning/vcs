@@ -12,7 +12,7 @@ import ro.luca1152.vcs.utils.ui.NoCommitMessageWindow
 import ro.luca1152.vcs.utils.ui.NothingToCommitWindow
 import ro.luca1152.vcs.utils.ui.SuccessfulCommitWindow
 
-class Repository(private val context: Context, name: String) {
+class Repository(private val context: Context, private val name: String) {
     // Injected objects
     private val appRules: AppRules = context.inject()
     private val mainScreen: MainScreen = context.inject()
@@ -36,7 +36,7 @@ class Repository(private val context: Context, name: String) {
         unstagedFiles.clear()
         stagedFiles.clear()
         Gdx.files.local(codePath).list().forEach {
-            if (!it.path().contains("/.vcs") && !it.isDirectory) {
+            if (!isFileIgnored(it) && !it.isDirectory) {
                 if (isFileUnstaged(it)) {
                     unstagedFiles.add(it)
                 } else {
@@ -93,7 +93,6 @@ class Repository(private val context: Context, name: String) {
             if (mainScreen.commitMessageTextField.text == "") {
                 uiStage.addActor(NoCommitMessageWindow(context))
             } else {
-                mainScreen.commitMessageTextField.text = ""
                 val commitTree = Tree()
                 stagedFiles.forEach {
                     commitTree.blobs[it.path()] = Blob().apply {
@@ -117,6 +116,7 @@ class Repository(private val context: Context, name: String) {
                         headName = appRules.latestCommitOnCurrentBranchHashedName
                     }
                     message = mainScreen.commitMessageTextField.text
+                    mainScreen.commitMessageTextField.text = ""
                 }
                 val jsonCommit = Json().toJson(commit)
                 val commitFileName = getHashedFileNameFromString(jsonCommit)
@@ -156,14 +156,20 @@ class Repository(private val context: Context, name: String) {
 
     fun deleteAllCode() {
         Gdx.files.local(codePath).list().forEach {
-            if (!it.isDirectory && !isFileIgnored(it)) {
+            if (!it.isDirectory && !isFileIgnored(it) && it.name() != "$codePath/.ignore") {
                 it.delete()
             }
         }
     }
 
     fun isFileIgnored(file: FileHandle): Boolean {
-        if (file.path().contains("/.vcs")) return true
-        return false
+        if (file.path().contains("/.vcs")) return false
+        val ignoreFile = Gdx.files.local("$codePath/.ignore").readString()
+        ignoreFile.split("\\r?\\n").forEach {
+            if (it.endsWith("*") && file.path().substring(name.length + 1).startsWith(it.substring(0, it.length - 2))) return false
+            else if (it.startsWith("*") && file.path().endsWith(it.substring(1))) return false
+            else if (file.path().substring(0, file.path().length - 2).startsWith(it)) return false
+        }
+        return true
     }
 }
