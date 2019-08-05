@@ -169,6 +169,29 @@ class NothingToCommitWindow(context: Context) : VisWindow("") {
     }
 }
 
+class NoCommitMessageWindow(context: Context) : VisWindow("") {
+    // Injected objects
+    private val uiViewport: UIViewport = context.inject()
+
+    private val repositoryNameLabel = VisLabel("Please enter a commit\nmessage...")
+    private val closeButton = VisTextButton("Close").apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                super.clicked(event, x, y)
+                this@NoCommitMessageWindow.remove()
+            }
+        })
+    }
+
+    init {
+        add(repositoryNameLabel).padBottom(10f).expand().row()
+        add(closeButton).expand()
+        setPosition(uiViewport.worldWidth / 2f - prefWidth / 2f, uiViewport.worldHeight / 2f - prefHeight / 2f)
+        width = 210f
+        height = 100f
+    }
+}
+
 class RescanButton(mainScreen: MainScreen) : VisTextButton("Rescan") {
     init {
         addListener(object : ClickListener() {

@@ -154,7 +154,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
         add(CommitButton(this@MainScreen)).growX().expandY().row()
     }
 
-    private val commitMessageTextField = VisTextField()
+    val commitMessageTextField = VisTextField()
 
     private val commitMessageRightColumn = VisTable().apply {
         add(VisWindow("Commit Message: ").apply {

@@ -8,6 +8,7 @@ import ro.luca1152.vcs.AppRules
 import ro.luca1152.vcs.screens.MainScreen
 import ro.luca1152.vcs.utils.HashUtils
 import ro.luca1152.vcs.utils.UIStage
+import ro.luca1152.vcs.utils.ui.NoCommitMessageWindow
 import ro.luca1152.vcs.utils.ui.NothingToCommitWindow
 import ro.luca1152.vcs.utils.ui.SuccesfulCommitWindow
 
@@ -89,42 +90,47 @@ class Repository(private val context: Context, name: String) {
 
     fun commitStaged() {
         if (stagedFiles.size != 0) {
-            val commitTree = Tree()
-            stagedFiles.forEach {
-                commitTree.blobs[it.path()] = Blob().apply {
-                    hashedFileName = getHashedFileName(it)
-                }
-            }
-            stagedFiles.clear()
-
-            val latestCommit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
-            if (latestCommit != null) {
-                latestCommit.tree?.blobs?.forEach {
-                    if (!commitTree.blobs.containsKey(it.key)) {
-                        commitTree.blobs[it.key] = it.value
+            if (mainScreen.commitMessageTextField.text == "") {
+                uiStage.addActor(NoCommitMessageWindow(context))
+            } else {
+                val commitTree = Tree()
+                stagedFiles.forEach {
+                    commitTree.blobs[it.path()] = Blob().apply {
+                        hashedFileName = getHashedFileName(it)
                     }
                 }
-            }
+                stagedFiles.clear()
 
-            val commit = Commit().apply {
-                tree = commitTree
-                if (appRules.latestCommitOnCurrentBranchHashedName != "") {
-                    headName = appRules.latestCommitOnCurrentBranchHashedName
+                val latestCommit = getCommitFromHashedName(appRules.latestCommitOnCurrentBranchHashedName)
+                if (latestCommit != null) {
+                    latestCommit.tree?.blobs?.forEach {
+                        if (!commitTree.blobs.containsKey(it.key)) {
+                            commitTree.blobs[it.key] = it.value
+                        }
+                    }
                 }
+
+                val commit = Commit().apply {
+                    tree = commitTree
+                    if (appRules.latestCommitOnCurrentBranchHashedName != "") {
+                        headName = appRules.latestCommitOnCurrentBranchHashedName
+                    }
+                    message = mainScreen.commitMessageTextField.text
+                }
+                val jsonCommit = Json().toJson(commit)
+                val commitFileName = getHashedFileNameFromString(jsonCommit)
+                commit.hashedFileName = commitFileName
+
+                Gdx.files.local("$internalPath/objects/$commitFileName").writeString(jsonCommit, false)
+
+                unstagedFiles.clear()
+                appRules.latestCommitOnCurrentBranchHashedName = commitFileName
+
+                mainScreen.shouldUpdateUnstagedChanges = true
+                mainScreen.shouldUpdateStagedChanges = true
+
+                uiStage.addActor(SuccesfulCommitWindow(context))
             }
-            val jsonCommit = Json().toJson(commit)
-            val commitFileName = getHashedFileNameFromString(jsonCommit)
-            commit.hashedFileName = commitFileName
-
-            Gdx.files.local("$internalPath/objects/$commitFileName").writeString(jsonCommit, false)
-
-            unstagedFiles.clear()
-            appRules.latestCommitOnCurrentBranchHashedName = commitFileName
-
-            mainScreen.shouldUpdateUnstagedChanges = true
-            mainScreen.shouldUpdateStagedChanges = true
-
-            uiStage.addActor(SuccesfulCommitWindow(context))
         } else {
             uiStage.addActor(NothingToCommitWindow(context))
         }
