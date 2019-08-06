@@ -17,6 +17,7 @@ import ktx.app.clearScreen
 import ktx.inject.Context
 import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.objects.Repository
+import ro.luca1152.vcs.utils.NonDraggingWindow
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.ui.*
 
@@ -89,7 +90,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     var shouldUpdateUnstagedChanges = false
-    private val unstagedChangesWindow = object : VisWindow("Unstaged Changes") {
+    private val unstagedChangesWindow = object : NonDraggingWindow("Unstaged Changes") {
         private val entriesTable = VisTable()
 
         val scrollPane = VisScrollPane(entriesTable).apply {
@@ -122,7 +123,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
 
     var shouldUpdateStagedChanges = false
-    private val stagedChangesWindow = object : VisWindow("Staged Changes") {
+    private val stagedChangesWindow = object : NonDraggingWindow("Staged Changes") {
         private val entriesTable = VisTable()
 
         val scrollPane = ScrollPane(entriesTable, skin, "list").apply {
@@ -159,7 +160,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     }
     private val codeDiffLabel = Label("a", skin, "default")
     var shouldResetCodeDiffText = false
-    private val codeDiffWindow = object : VisWindow("Code Difference") {
+    private val codeDiffWindow = object : NonDraggingWindow("Code Difference") {
         init {
             this.titleTable.add(VisLabel("abc"))
             add(VisScrollPane(codeDiffLabel.apply {
@@ -227,7 +228,7 @@ class MainScreen(context: Context) : ScreenAdapter() {
     val commitMessageTextField = VisTextField()
 
     private val commitMessageRightColumn = VisTable().apply {
-        add(VisWindow("Commit Message: ").apply {
+        add(NonDraggingWindow("Commit Message: ").apply {
             add(commitMessageTextField).grow().padBottom(5f)
         }).grow()
     }

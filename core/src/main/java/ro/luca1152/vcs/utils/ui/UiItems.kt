@@ -12,10 +12,11 @@ import ro.luca1152.vcs.json.Config
 import ro.luca1152.vcs.objects.Commit
 import ro.luca1152.vcs.objects.Repository
 import ro.luca1152.vcs.screens.MainScreen
+import ro.luca1152.vcs.utils.NonDraggingWindow
 import ro.luca1152.vcs.utils.UIStage
 import ro.luca1152.vcs.utils.UIViewport
 
-class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
+class NewRepositoryWindow(context: Context) : NonDraggingWindow("New Repository...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val mainScreen: MainScreen = context.inject()
@@ -59,7 +60,7 @@ class NewRepositoryWindow(context: Context) : VisWindow("New Repository...") {
     }
 }
 
-class OpenRepositoryWindow(context: Context) : VisWindow("Open Repository...") {
+class OpenRepositoryWindow(context: Context) : NonDraggingWindow("Open Repository...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val mainScreen: MainScreen = context.inject()
@@ -134,7 +135,7 @@ class StageButton(context: Context, file: FileHandle, isStaged: Boolean) : VisTe
     }
 }
 
-class SuccessfulCommitWindow(context: Context) : VisWindow("") {
+class SuccessfulCommitWindow(context: Context) : NonDraggingWindow("") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
 
@@ -157,7 +158,7 @@ class SuccessfulCommitWindow(context: Context) : VisWindow("") {
     }
 }
 
-class NothingToCommitWindow(context: Context) : VisWindow("") {
+class NothingToCommitWindow(context: Context) : NonDraggingWindow("") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
 
@@ -180,7 +181,7 @@ class NothingToCommitWindow(context: Context) : VisWindow("") {
     }
 }
 
-class NoCommitMessageWindow(context: Context) : VisWindow("") {
+class NoCommitMessageWindow(context: Context) : NonDraggingWindow("") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
 
@@ -217,7 +218,7 @@ class CommitButton(mainScreen: MainScreen) : VisTextButton("Commit") {
     }
 }
 
-class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWindow("Revert commit...") {
+class RevertWindow(context: Context, private val mainScreen: MainScreen) : NonDraggingWindow("Revert commit...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()
@@ -279,7 +280,7 @@ class RevertWindow(context: Context, private val mainScreen: MainScreen) : VisWi
 }
 
 
-class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScreen) : VisWindow("") {
+class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScreen) : NonDraggingWindow("") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()
@@ -317,7 +318,7 @@ class RevertToCommitWindow(context: Context, commit: Commit, mainScreen: MainScr
     }
 }
 
-class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
+class NewBranchWindow(context: Context) : NonDraggingWindow("New Branch...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val config: Config = context.inject()
@@ -366,7 +367,7 @@ class NewBranchWindow(context: Context) : VisWindow("New Branch...") {
     }
 }
 
-class CheckoutWindow(context: Context, private val mainScreen: MainScreen) : VisWindow("Checkout branch...") {
+class CheckoutWindow(context: Context, private val mainScreen: MainScreen) : NonDraggingWindow("Checkout branch...") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()
@@ -411,7 +412,7 @@ class CheckoutWindow(context: Context, private val mainScreen: MainScreen) : Vis
     }
 }
 
-class CheckoutConfirmationWindow(context: Context, branch: String, mainScreen: MainScreen) : VisWindow("") {
+class CheckoutConfirmationWindow(context: Context, branch: String, mainScreen: MainScreen) : NonDraggingWindow("") {
     // Injected objects
     private val uiViewport: UIViewport = context.inject()
     private val uiStage: UIStage = context.inject()
